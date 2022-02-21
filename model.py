@@ -10,10 +10,8 @@ class FNNModel(nn.Module):
         self.n_token = args.n_token
         self.h_dim = args.h_dim
         self.n_gram = args.n_gram
-        self.dropout = args.dropout
-        self.tie_weights = args.tie_weights
+        self.tie_weights = args.tied
 
-        self.drop = nn.Dropout(self.dropout)
         self.encoder = nn.Embedding(self.n_token, self.h_dim)
         self.fc1 = nn.Linear(self.h_dim * self.n_gram, self.h_dim)
 
@@ -45,8 +43,8 @@ class FNNModel(nn.Module):
             nn.init.zeros_(self.decoder.bias)
 
     def forward(self, x):
-        output = self.drop(self.encoder(x))
-        output = self.drop(self.fc1(output))
+        output = self.encoder(x)
+        output = self.fc1(output.view(-1, self.h_dim * self.n_gram))
         output = self.decoder(output)
         output = self.softmax(output)
         return output

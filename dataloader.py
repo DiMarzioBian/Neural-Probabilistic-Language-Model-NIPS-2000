@@ -39,39 +39,48 @@ def tokenize(dictionary, path):
             ids = []
             for word in words:
                 ids.append(dictionary.word2idx[word])
-            idss.append(torch.IntTensor(ids))
-        ids = torch.cat(idss)
+            idss += ids
 
-    return ids
+    return dictionary, idss
 
 
 class WikiTextData(Dataset):
-    """WikiText Dataset"""
+    """ WikiText Dataset """
     def __init__(self, args, tks_file):
-        self.item_seq, self.item_gt, self.date_seq, self.date_gt = data
-        self.length = len(self.item_seq)
+        self.n_gram = args.n_gram
+        self.tokens_file = tks_file
+        self.length = len(tks_file) - args.n_gram
 
     def __len__(self):
         return self.length
 
     def __getitem__(self, index):
+        return self.tokens_file[index: index+self.n_gram], self.tokens_file[index+self.n_gram+1]
 
 
+def collate_fn(insts):
+    """ Batch preprocess """
+    seq_tokens_batch, tgt_tokens_batch = list(zip(*insts))
 
-# Get dataloader for train and valid and test set
+    seq_tokens_batch = torch.LongTensor(seq_tokens_batch)
+    tgt_tokens_batch = torch.LongTensor(tgt_tokens_batch)
+    return seq_tokens_batch, tgt_tokens_batch
+
+
 def get_dataloader(args):
+    """ Get dataloader and dictionary """
     my_dict = Dictionary()
 
-    train_data = tokenize(my_dict, path='data/train.txt')
-    valid_data = tokenize(my_dict, path='data/valid.txt')
-    test_data = tokenize(my_dict, path='data/test.txt')
+    my_dict, train_data = tokenize(my_dict, path=os.path.join(args.path_data, 'train.txt'))
+    my_dict, valid_data = tokenize(my_dict, path=os.path.join(args.path_data, 'valid.txt'))
+    my_dict, test_data = tokenize(my_dict, path=os.path.join(args.path_data, 'test.txt'))
 
-    train_loader = DataLoader(WikiTextData(args, train_data), batch_size=args.batch_size, num_workers=args.num_workers,
-                              shuffle=True)
-    valid_loader = DataLoader(WikiTextData(args, valid_data), batch_size=args.batch_size, num_workers=args.num_workers,
-                              shuffle=True)
-    test_loader = DataLoader(WikiTextData(args, test_data), batch_size=args.batch_size, num_workers=args.num_workers,
-                              shuffle=True)
+    train_loader = DataLoader(WikiTextData(args, train_data), batch_size=args.batch_size, num_workers=args.num_worker,
+                              collate_fn=collate_fn, shuffle=True)
+    valid_loader = DataLoader(WikiTextData(args, valid_data), batch_size=args.batch_size, num_workers=args.num_worker,
+                              collate_fn=collate_fn, shuffle=True)
+    test_loader = DataLoader(WikiTextData(args, test_data), batch_size=args.batch_size, num_workers=args.num_worker,
+                             collate_fn=collate_fn, shuffle=True)
 
     return my_dict, train_loader, valid_loader, test_loader
 
