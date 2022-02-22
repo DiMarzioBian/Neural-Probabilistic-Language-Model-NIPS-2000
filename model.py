@@ -19,11 +19,12 @@ class FNNModel(nn.Module):
         if not self.share_embedding:
             self.decoder = nn.Linear(self.h_dim, self.n_token)
         elif self.share_embedding_strict:
-            # Strictly tied, no bias as embedding
+            # Strictly shared, as there's no bias in embedding
             self.decoder = nn.Linear(self.h_dim, self.n_token, bias=False)
             self.decoder.weight = self.encoder.weight
         else:
-            self.decoder = nn.Linear(self.h_dim, self.n_token)
+            # Softly shared, on shared weights but not biases
+            self.decoder = nn.Linear(self.h_dim, self.n_token, bias=True)
             self.decoder.weight = self.encoder.weight
 
         self.drop = nn.Dropout(p=args.dropout)
@@ -36,10 +37,10 @@ class FNNModel(nn.Module):
         nn.init.uniform_(self.fc1.weight, -std_var, std_var)
         nn.init.zeros_(self.fc1.bias)
 
-        if not self.tie_weights:
+        if not self.share_embedding:
             nn.init.uniform_(self.decoder.weight, -std_var, std_var)
             nn.init.zeros_(self.decoder.bias)
-        elif not self.tie_no_bias:
+        elif not self.share_embedding_strict:
             nn.init.zeros_(self.decoder.bias)
 
     def forward(self, x):

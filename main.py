@@ -19,7 +19,7 @@ def main():
                         help='number of dataloader worker')
     parser.add_argument('--h_dim', type=int, default=200,
                         help='size of hidden representation including embeddings')
-    parser.add_argument('--optimizer', type=str, default='AdamW',
+    parser.add_argument('--optimizer', type=str, default='Adam',
                         help='Adam, AdamW, RMSprop, Adagrad, SGD')
     parser.add_argument('--lr', type=float, default=1e-3,
                         help='initial learning rate')
@@ -33,11 +33,11 @@ def main():
                         help='batch size')
     parser.add_argument('--n_gram', type=int, default=40,
                         help='length of each training sequence')
-    parser.add_argument('--dropout', type=float, default=0.05,
+    parser.add_argument('--dropout', type=float, default=0.0,
                         help='dropout applied to layers (0 = no dropout)')
-    parser.add_argument('--share_embedding_', type=bool, default=False,
+    parser.add_argument('--share_embedding', type=bool, default=True,
                         help='shared embedding and decoder weights')
-    parser.add_argument('--share_embedding_strict', type=bool, default=False,
+    parser.add_argument('--share_embedding_strict', type=bool, default=True,
                         help='strictly shared embedding and decoder weights, no bias')
     parser.add_argument('--seed', type=int, default=1111,
                         help='random seed')
@@ -82,8 +82,8 @@ def main():
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.lr_step, gamma=args.lr_gamma)
 
     # Start modeling
-    print('[info] | {optimizer} | N_gram {ngram:d} | Tied: {Tied} | Dropout {dropout:3.2f}| H_dim {h_dim:d} |'
-          .format(optimizer=args.optimizer, ngram=args.n_gram, Tied=str(args.tied), dropout=args.dropout,
+    print('[info] | {optimizer} | N_gram {ngram:d} | Shared: {Shared} | Dropout {dropout:3.2f}| H_dim {h_dim:d} |'
+          .format(optimizer=args.optimizer, ngram=args.n_gram, Shared=str(args.share_embedding), dropout=args.dropout,
                   h_dim=args.h_dim))
     best_val_loss = 1e5
     best_acc = 0
@@ -117,8 +117,8 @@ def main():
     with open(args.save, 'rb') as f:
         model = torch.load(f)
     test_loss, test_acc = evaluate(args, model, test_loader, mode='Test')
-    print('  | {optimizer} | N_gram {ngram:d} | Tied: {Tied} | Dropout {dropout:3.2f}| H_dim {h_dim:d} |'
-          .format(optimizer=args.optimizer, ngram=args.n_gram, Tied=str(args.tied), dropout=args.dropout,
+    print('  | {optimizer} | N_gram {ngram:d} | Shared: {Shared} | Dropout {dropout:3.2f}| H_dim {h_dim:d} |'
+          .format(optimizer=args.optimizer, ngram=args.n_gram, Shared=str(args.share_embedding), dropout=args.dropout,
                   h_dim=args.h_dim))
 
     # Export the model in ONNX format.
