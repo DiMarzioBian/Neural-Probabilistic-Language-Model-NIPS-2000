@@ -35,9 +35,11 @@ def main():
                         help='length of each training sequence')
     parser.add_argument('--dropout', type=float, default=0.0,
                         help='dropout applied to layers (0 = no dropout)')
-    parser.add_argument('--share_embedding', type=bool, default=True,
+    parser.add_argument('--skip_connect', type=bool, default=True,
+                        help='add skip_connect from encoder to decoder')
+    parser.add_argument('--share_embedding', type=bool, default=False,
                         help='shared embedding and decoder weights')
-    parser.add_argument('--share_embedding_strict', type=bool, default=True,
+    parser.add_argument('--share_embedding_strict', type=bool, default=False,
                         help='strictly shared embedding and decoder weights, no bias')
     parser.add_argument('--seed', type=int, default=1111,
                         help='random seed')
@@ -47,9 +49,11 @@ def main():
                         help='path to save the final model')
     parser.add_argument('--onnx-export', type=str, default='./saved_model/model.onnx',
                         help='path to export the final model in onnx format')
+    parser.add_argument('--device', type=str, default='cuda:0',
+                        help='device for modeling')
 
     args = parser.parse_args()
-    args.device = torch.device('cuda:0')
+    args.device = torch.device(args.device)
     print('\n[info] Project starts...')
 
     torch.manual_seed(args.seed)
@@ -82,9 +86,10 @@ def main():
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.lr_step, gamma=args.lr_gamma)
 
     # Start modeling
-    print('[info] | {optimizer} | N_gram {ngram:d} | Shared: {Shared} | Dropout {dropout:3.2f}| H_dim {h_dim:d} |'
-          .format(optimizer=args.optimizer, ngram=args.n_gram, Shared=str(args.share_embedding), dropout=args.dropout,
-                  h_dim=args.h_dim))
+    print('[info] | {optimizer} | N_gram {ngram:d} | Shared: {shared} | Direct: {direct} | Dropout {dropout:3.2f} '
+          '| H_dim {h_dim:d} |'
+          .format(optimizer=args.optimizer, ngram=args.n_gram, shared=str(args.share_embedding),
+                  direct=str(args.skip_connect), dropout=args.dropout, h_dim=args.h_dim))
     best_val_loss = 1e5
     best_acc = 0
     es_patience = 0
@@ -117,9 +122,10 @@ def main():
     with open(args.save, 'rb') as f:
         model = torch.load(f)
     test_loss, test_acc = evaluate(args, model, test_loader, mode='Test')
-    print('  | {optimizer} | N_gram {ngram:d} | Shared: {Shared} | Dropout {dropout:3.2f}| H_dim {h_dim:d} |'
-          .format(optimizer=args.optimizer, ngram=args.n_gram, Shared=str(args.share_embedding), dropout=args.dropout,
-                  h_dim=args.h_dim))
+    print('[info] | {optimizer} | N_gram {ngram:d} | Shared: {shared} | Direct: {direct} | Dropout {dropout:3.2f} '
+          '| H_dim {h_dim:d} |'
+          .format(optimizer=args.optimizer, ngram=args.n_gram, shared=str(args.share_embedding),
+                  direct=str(args.skip_connect), dropout=args.dropout, h_dim=args.h_dim))
 
     # Export the model in ONNX format.
     if len(args.onnx_export) > 0:
