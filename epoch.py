@@ -37,7 +37,7 @@ def train(args, model, data, optimizer):
     return mean_loss, acc
 
 
-def evaluate(args, model, data):
+def evaluate(args, model, data, mode='Valid'):
     model.eval()
     total_loss = 0.
     total_sample = 0
@@ -59,7 +59,7 @@ def evaluate(args, model, data):
 
         mean_loss = total_loss / total_sample
         acc = total_hit / total_sample
-        print('  | Valid | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f} |'
-              .format(mean_loss, math.exp(mean_loss), acc))
+        print('  | {} | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f} |'
+              .format(mode, mean_loss, math.exp(mean_loss), acc))
 
     return mean_loss, acc

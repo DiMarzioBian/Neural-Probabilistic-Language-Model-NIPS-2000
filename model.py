@@ -10,14 +10,15 @@ class FNNModel(nn.Module):
         self.n_token = args.n_token
         self.h_dim = args.h_dim
         self.n_gram = args.n_gram
-        self.tie_weights = args.tied
+        self.share_embedding = args.share_embedding
+        self.share_embedding_strict = args.share_embedding_strict
 
         self.encoder = nn.Embedding(self.n_token, self.h_dim)
         self.fc1 = nn.Linear(self.h_dim * self.n_gram, self.h_dim)
 
-        if not self.tie_weights:
+        if not self.share_embedding:
             self.decoder = nn.Linear(self.h_dim, self.n_token)
-        elif self.tie_no_bias:
+        elif self.share_embedding_strict:
             # Strictly tied, no bias as embedding
             self.decoder = nn.Linear(self.h_dim, self.n_token, bias=False)
             self.decoder.weight = self.encoder.weight
@@ -25,6 +26,7 @@ class FNNModel(nn.Module):
             self.decoder = nn.Linear(self.h_dim, self.n_token)
             self.decoder.weight = self.encoder.weight
 
+        self.drop = nn.Dropout(p=args.dropout)
         self.init_weights()
 
     # Init parameters
@@ -41,7 +43,7 @@ class FNNModel(nn.Module):
             nn.init.zeros_(self.decoder.bias)
 
     def forward(self, x):
-        output = self.encoder(x)
+        output = self.drop(self.encoder(x))
         output = self.fc1(output.view(-1, self.h_dim * self.n_gram))
         output = self.decoder(output)
         return output
