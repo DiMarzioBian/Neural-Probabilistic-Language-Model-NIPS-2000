@@ -32,7 +32,7 @@ def train(args, model, data, optimizer):
     mean_loss = total_loss / total_sample
     acc = total_hit / total_sample
     print('  | Train | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f} | {:5.2f} s | '
-          .format(mean_loss, math.exp(mean_loss), acc), time_elapse)
+          .format(mean_loss, math.exp(mean_loss), acc, time_elapse))
 
     return mean_loss, acc
 
