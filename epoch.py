@@ -31,7 +31,7 @@ def train(args, model, data, optimizer):
     time_elapse = (time.time() - start_time)
     mean_loss = total_loss / total_sample
     acc = total_hit / total_sample
-    print('  | ms/epoch {:5.2f} | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f} |'
+    print('  | Training | {:5.2f} s/epoch | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f}'
           .format(time_elapse, mean_loss, math.exp(mean_loss), acc))
 
     return mean_loss, acc

@@ -55,7 +55,7 @@ class WikiTextData(Dataset):
         return self.length
 
     def __getitem__(self, index):
-        return self.tokens_file[index: index+self.n_gram], self.tokens_file[index+self.n_gram+1]
+        return self.tokens_file[index: index+self.n_gram], self.tokens_file[index+self.n_gram]
 
 
 def collate_fn(insts):

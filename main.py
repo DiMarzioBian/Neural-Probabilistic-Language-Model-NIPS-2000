@@ -15,7 +15,7 @@ def main():
     parser = argparse.ArgumentParser(description='PyTorch Wikitext-2 RNN/LSTM/GRU/Transformer Language Model')
     parser.add_argument('--path_data', type=str, default='./data/wikitext-2',
                         help='location of the data corpus')
-    parser.add_argument('--num_worker', type=int, default=20,
+    parser.add_argument('--num_worker', type=int, default=6,
                         help='number of dataloader worker')
     parser.add_argument('--h_dim', type=int, default=200,
                         help='size of hidden representation including embeddings')
@@ -34,7 +34,7 @@ def main():
                         help='upper epoch limit')
     parser.add_argument('--batch_size', type=int, default=1000, metavar='N',
                         help='batch size')
-    parser.add_argument('--n_gram', type=int, default=5,
+    parser.add_argument('--n_gram', type=int, default=30,
                         help='length of each training sequence')
     parser.add_argument('--dropout', type=float, default=0,
                         help='dropout applied to layers (0 = no dropout)')
