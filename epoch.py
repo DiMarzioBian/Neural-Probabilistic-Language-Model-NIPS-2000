@@ -13,7 +13,7 @@ def train(args, model, data, optimizer):
     total_hit = 0
     start_time = time.time()
 
-    for batch in tqdm(data, desc='- training', leave=False):
+    for batch in tqdm(data, desc='  - training', leave=False):
         len_batch = batch[0].shape[0]
         total_sample += len_batch
         seq_batch, gt_batch = map(lambda x: x.to(args.device), batch)
@@ -31,8 +31,8 @@ def train(args, model, data, optimizer):
     time_elapse = (time.time() - start_time)
     mean_loss = total_loss / total_sample
     acc = total_hit / total_sample
-    print('  | Training | {:5.2f} s/epoch | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f}'
-          .format(time_elapse, mean_loss, math.exp(mean_loss), acc))
+    print('  | Train | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f} | {:5.2f} s | '
+          .format(mean_loss, math.exp(mean_loss), acc), time_elapse)
 
     return mean_loss, acc
 
@@ -44,7 +44,7 @@ def evaluate(args, model, data):
     total_hit = 0
 
     with torch.no_grad():
-        for batch in tqdm(data, desc='- evaluating', leave=False):
+        for batch in tqdm(data, desc='  - evaluating', leave=False):
             len_batch = batch[0].shape[0]
             total_sample += len_batch
             seq_batch, gt_batch = map(lambda x: x.to(args.device), batch)
@@ -59,7 +59,7 @@ def evaluate(args, model, data):
 
         mean_loss = total_loss / total_sample
         acc = total_hit / total_sample
-        print('  | Evaluation | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f} |'
+        print('  | Valid | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f} |'
               .format(mean_loss, math.exp(mean_loss), acc))
 
     return mean_loss, acc

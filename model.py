@@ -25,8 +25,6 @@ class FNNModel(nn.Module):
             self.decoder = nn.Linear(self.h_dim, self.n_token)
             self.decoder.weight = self.encoder.weight
 
-        self.softmax = nn.Softmax(dim=1)
-
         self.init_weights()
 
     # Init parameters
@@ -46,5 +44,4 @@ class FNNModel(nn.Module):
         output = self.encoder(x)
         output = self.fc1(output.view(-1, self.h_dim * self.n_gram))
         output = self.decoder(output)
-        output = self.softmax(output)
         return output
