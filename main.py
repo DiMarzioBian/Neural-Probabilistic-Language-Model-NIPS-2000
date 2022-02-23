@@ -46,7 +46,7 @@ def main():
                         help='Max early stopped patience')
     parser.add_argument('--save', type=str, default='./saved_model/model.pt',
                         help='path to save the final model')
-    parser.add_argument('--onnx-export', type=str, default='./saved_model/model.onnx',
+    parser.add_argument('--onnx-export', type=str, default='',
                         help='path to export the final model in onnx format')
     parser.add_argument('--device', type=str, default='cuda:0',
                         help='device for modeling')
