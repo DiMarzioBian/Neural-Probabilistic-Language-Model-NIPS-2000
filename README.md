@@ -1,3 +1,7 @@
+# A neural probabilistic language model
+Original paper: https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf
+### This is a pytorch replicate of the neural probabilistic language model
+
 ************************************************************
 ********************   Training model   ********************
 ************************************************************
