@@ -1,5 +1,4 @@
 import argparse
-import time
 import math
 import os
 import torch
@@ -35,7 +34,7 @@ def main():
                         help='length of each training sequence')
     parser.add_argument('--dropout', type=float, default=0.0,
                         help='dropout applied to layers (0 = no dropout)')
-    parser.add_argument('--skip_connect', type=bool, default=True,
+    parser.add_argument('--skip_connect', type=bool, default=False,
                         help='add skip_connect from encoder to decoder')
     parser.add_argument('--share_embedding', type=bool, default=False,
                         help='shared embedding and decoder weights')
