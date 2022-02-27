@@ -2,9 +2,9 @@
 
 This is a pytorch implementation of NIPS'00 paper [A neural probabilistic language model](https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf)
 
-************************************************************
-********************   Training model   ********************
-************************************************************
+
+## Training model
+
 Run `python main.py`, this script accepts the following arguments:
 
 ```bash
@@ -33,9 +33,8 @@ optional arguments:
 No arguments will run the model in the best settings achieved loss 5.0773.
 
 
-************************************************************
-*******************   Generating text   ********************
-************************************************************
+##   Generating text
+
 Run `python generate.py`, this script accepts the following arguments:
 
 ```bash
@@ -55,9 +54,8 @@ Input text is hardcoded cannot be change by arguments because of length required
 if you are using the saved model.
 
 
-************************************************************
-*****************   Compute Correlation   ******************
-************************************************************
+
+##   Compute Correlation
 Run `python correlation.py`, this script accepts the following arguments:
 
 ```bash
@@ -74,7 +72,7 @@ optional arguments:
 ************************************************************
 ********************   File structure   ********************
 ************************************************************
-
+```bash
 ----P1_CE7455\
     |----correlation.py
     |----data\
@@ -96,3 +94,4 @@ optional arguments:
     |    |----generated.txt
     |----saved_model\
     |    |----model.pt
+```
