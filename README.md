@@ -12,11 +12,13 @@ optional arguments:
   -h, --help                show this help message and exit
   --path_data               location of the data corpus
   --num_worker              number of workers to load data
+  --initial_preprocess      use initial data preprocess strategy
   --h_dim                   dimensions of hidden state and embedding vectors
   --optimizer               optimizer type: Adam, AdamW, RMSprop, Adagrad, SGD
   --lr                      initial learning rate
   --lr_step                 step length of lr decay
   --lr_gamma                strength of lr decay
+  --eps_loss                minimum loss difference threshold
   --epochs                  maximum epoch
   --batch_size              batch size
   --n_gram                  input sequence length
@@ -68,10 +70,7 @@ optional arguments:
   --checkpoint              lcoation of model checkpoint to use
 ```
 
-
-************************************************************
-********************   File structure   ********************
-************************************************************
+## File structure
 ```bash
 ----P1_CE7455\
     |----correlation.py
