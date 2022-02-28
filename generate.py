@@ -52,8 +52,8 @@ def main():
     args.n_token = len(my_dict)
 
     # Set lyrics as input from <Numb - Linkin Park>
-    input_words = "I 'm tired of being what you want me to be . Feeling so sad , lost under the surface . Dont know"\
-                  " what you are expecting of me . Put under the pressure of walking in your shoes ."
+    input_words = "I 'm tired of being what you want me to be . <eos> Feeling so sad , lost under the surface . <eos>" \
+                  " Dont know what you are expecting of me . <eos> Put under the pressure of walking in"
     print()
     input_idx = []
 

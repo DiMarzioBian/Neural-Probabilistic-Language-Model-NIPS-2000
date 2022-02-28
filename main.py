@@ -30,7 +30,7 @@ def main():
                         help='strength of lr downgrade')
     parser.add_argument('--eps_loss', type=float, default=1e-5,
                         help='minimum loss difference threshold')
-    parser.add_argument('--epochs', type=int, default=50,
+    parser.add_argument('--epochs', type=int, default=200,
                         help='upper epoch limit')
     parser.add_argument('--batch_size', type=int, default=1000, metavar='N',
                         help='batch size')
@@ -101,6 +101,7 @@ def main():
                   direct=str(args.skip_connect), dropout=args.dropout, h_dim=args.h_dim))
     best_val_loss = 1e5
     best_acc = 0
+    best_epoch = 0
     es_patience = 0
 
     for epoch in range(1, args.epochs+1):
@@ -112,12 +113,13 @@ def main():
         val_loss, val_acc = evaluate(args, model, valid_loader, mode='Valid', es_patience=es_patience)
 
         # Save the model if the validation loss is the best we've seen so far.
-        if best_val_loss - val_loss > args.eps_loss:
+        if val_loss < best_val_loss:
             with open(args.save, 'wb') as f:
                 torch.save(model, f)
             best_val_loss = val_loss
             best_acc = val_acc
-            if val_loss < best_val_loss:
+            best_epoch = epoch
+            if best_val_loss - val_loss > args.eps_loss:
                 es_patience = 0
         else:
             # Early stopping condition
@@ -134,9 +136,9 @@ def main():
         model = torch.load(f)
     test_loss, test_acc = evaluate(args, model, test_loader, es_patience, mode='Test')
     print('\n[info] | {optimizer} | N_gram {ngram:d} | Shared: {shared} | Direct: {direct} | Dropout {dropout:3.2f} '
-          '| H_dim {h_dim:d} |\n'
+          '| H_dim {h_dim:d} | Epoch {epoch:.0f} |\n'
           .format(optimizer=args.optimizer, ngram=args.n_gram, shared=str(args.share_embedding),
-                  direct=str(args.skip_connect), dropout=args.dropout, h_dim=args.h_dim))
+                  direct=str(args.skip_connect), dropout=args.dropout, h_dim=args.h_dim, epoch=best_epoch))
 
     # Export the model in ONNX format.
     if len(args.onnx_export) > 0:
