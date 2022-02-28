@@ -16,16 +16,20 @@ def main():
                         help='location of the data corpus')
     parser.add_argument('--num_worker', type=int, default=25,
                         help='number of dataloader worker')
+    parser.add_argument('--initial_preprocess', type=bool, default=False,
+                        help='use initial data preprocess strategy')
     parser.add_argument('--h_dim', type=int, default=200,
                         help='size of hidden representation including embeddings')
     parser.add_argument('--optimizer', type=str, default='Adam',
-                        help='Adam, AdamW, RMSprop, Adagrad, SGD')
+                        help='Adam, AdamW, RMSprop, Adagrad, SGD & Initial')
     parser.add_argument('--lr', type=float, default=1e-3,
                         help='initial learning rate')
     parser.add_argument('--lr_step', type=int, default=10,
                         help='number of epoch for each lr downgrade')
     parser.add_argument('--lr_gamma', type=float, default=0.1,
                         help='strength of lr downgrade')
+    parser.add_argument('--eps_loss', type=float, default=1e-5,
+                        help='minimum loss difference threshold')
     parser.add_argument('--epochs', type=int, default=50,
                         help='upper epoch limit')
     parser.add_argument('--batch_size', type=int, default=1000, metavar='N',
@@ -80,9 +84,15 @@ def main():
     elif args.optimizer == 'SGD':
         optimizer = torch.optim.SGD(filter(lambda x: x.requires_grad, model.parameters()), lr=args.lr,
                                     weight_decay=1e-4, momentum=0.9, nesterov=True)
+    elif args.optimizer == 'Initial' or args.v_initial:
+        optimizer = None
     else:
         raise RuntimeError('Wrong optimizer: '+args.optimizer+'...')
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.lr_step, gamma=args.lr_gamma)
+
+    if args.optimizer != 'Initial':
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.lr_step, gamma=args.lr_gamma)
+    else:
+        scheduler = None
 
     # Start modeling
     print('[info] | {optimizer} | N_gram {ngram:d} | Shared: {shared} | Direct: {direct} | Dropout {dropout:3.2f} '
@@ -96,17 +106,19 @@ def main():
     for epoch in range(1, args.epochs+1):
         print('\n[Epoch {epoch}]'.format(epoch=epoch))
 
-        tr_loss, tr_acc = train(args, model, train_loader, optimizer)
-        scheduler.step()
-        val_loss, val_acc = evaluate(args, model, valid_loader, mode='Valid')
+        train(args, model, train_loader, optimizer)
+        if args.optimizer != 'Initial':
+            scheduler.step()
+        val_loss, val_acc = evaluate(args, model, valid_loader, mode='Valid', es_patience=es_patience)
 
         # Save the model if the validation loss is the best we've seen so far.
-        if val_loss <= best_val_loss:
+        if best_val_loss - val_loss > args.eps_loss:
             with open(args.save, 'wb') as f:
                 torch.save(model, f)
             best_val_loss = val_loss
             best_acc = val_acc
-            es_patience = 0
+            if val_loss < best_val_loss:
+                es_patience = 0
         else:
             # Early stopping condition
             es_patience += 1
@@ -120,9 +132,9 @@ def main():
     print('\n[Testing]')
     with open(args.save, 'rb') as f:
         model = torch.load(f)
-    test_loss, test_acc = evaluate(args, model, test_loader, mode='Test')
-    print('[info] | {optimizer} | N_gram {ngram:d} | Shared: {shared} | Direct: {direct} | Dropout {dropout:3.2f} '
-          '| H_dim {h_dim:d} |'
+    test_loss, test_acc = evaluate(args, model, test_loader, es_patience, mode='Test')
+    print('\n[info] | {optimizer} | N_gram {ngram:d} | Shared: {shared} | Direct: {direct} | Dropout {dropout:3.2f} '
+          '| H_dim {h_dim:d} |\n'
           .format(optimizer=args.optimizer, ngram=args.n_gram, shared=str(args.share_embedding),
                   direct=str(args.skip_connect), dropout=args.dropout, h_dim=args.h_dim))
 

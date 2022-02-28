@@ -3,6 +3,9 @@ from io import open
 import torch
 from torch.utils.data import Dataset, DataLoader
 
+# import numpy as np
+# import matplotlib.pyplot as plt
+
 
 # Dictionary to store all words and their indices
 class Dictionary(object):
@@ -47,15 +50,41 @@ def tokenize(dictionary, path):
 class WikiTextData(Dataset):
     """ WikiText Dataset """
     def __init__(self, args, tks_file):
+        self.initial_preprocess = args.initial_preprocess
         self.n_gram = args.n_gram
         self.tokens_file = tks_file
-        self.length = len(tks_file) - args.n_gram
+        if self.initial_preprocess:
+            self.length = len(tks_file) // (args.n_gram+1)
+        else:
+            self.length = len(tks_file) - args.n_gram
+
+        # EDA: plot frequency
+        # tks = np.array(tks_file)
+        # unique, counts = np.unique(tks, return_counts=True)
+        # counts = counts[::-1]
+        #
+        # fig, axs = plt.subplots(2, 1)
+        # axs[0].plot(counts)
+        # axs[0].set_ylabel('Frequency')
+        # axs[0].grid(True)
+        #
+        # axs[1].plot(np.log(counts))
+        # axs[1].set_ylabel('Frequency in log')
+        # axs[1].set_xlabel('Words / tokens')
+        # axs[1].grid(True)
+        #
+        # fig.tight_layout()
+        # plt.show()
 
     def __len__(self):
         return self.length
 
     def __getitem__(self, index):
-        return self.tokens_file[index: index+self.n_gram], self.tokens_file[index+self.n_gram]
+        if self.initial_preprocess:
+            return self.tokens_file[index * self.n_gram: (index+1) * self.n_gram], \
+                   self.tokens_file[(index+1) * self.n_gram]
+        else:
+            return self.tokens_file[index: index+self.n_gram], self.tokens_file[index+self.n_gram]
 
 
 def collate_fn(insts):
@@ -78,13 +107,12 @@ def get_dataloader(args, no_dataloader=False):
     if no_dataloader:
         # For generation and similarity calculation quest which do not need dataloader
         return my_dict
-    else:
-        train_loader = DataLoader(WikiTextData(args, train_data), batch_size=args.batch_size,
-                                  num_workers=args.num_worker, collate_fn=collate_fn, shuffle=True)
-        valid_loader = DataLoader(WikiTextData(args, valid_data), batch_size=args.batch_size,
-                                  num_workers=args.num_worker, collate_fn=collate_fn, shuffle=True)
-        test_loader = DataLoader(WikiTextData(args, test_data), batch_size=args.batch_size, num_workers=args.num_worker,
-                                 collate_fn=collate_fn, shuffle=True)
 
-        return my_dict, train_loader, valid_loader, test_loader
+    train_loader = DataLoader(WikiTextData(args, train_data), batch_size=args.batch_size,
+                              num_workers=args.num_worker, collate_fn=collate_fn, shuffle=True)
+    valid_loader = DataLoader(WikiTextData(args, valid_data), batch_size=args.batch_size,
+                              num_workers=args.num_worker, collate_fn=collate_fn, shuffle=True)
+    test_loader = DataLoader(WikiTextData(args, test_data), batch_size=args.batch_size, num_workers=args.num_worker,
+                             collate_fn=collate_fn, shuffle=True)
+    return my_dict, train_loader, valid_loader, test_loader
 

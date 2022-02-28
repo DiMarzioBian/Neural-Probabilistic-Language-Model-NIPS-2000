@@ -22,7 +22,11 @@ def train(args, model, data, optimizer):
         output_batch = model(seq_batch)
         loss = args.criterion(output_batch, gt_batch)
         loss.backward()
-        optimizer.step()
+        if args.optimizer != 'Initial':
+            optimizer.step()
+        else:
+            for p in filter(lambda x: x.requires_grad, model.parameters()):
+                p.data.add_(p.grad, alpha=-args.lr)
 
         total_loss += loss.item() * len_batch
         hit = torch.eq(gt_batch, output_batch.max(-1).indices).sum().item() / len_batch
@@ -37,7 +41,7 @@ def train(args, model, data, optimizer):
     return mean_loss, acc
 
 
-def evaluate(args, model, data, mode='Valid'):
+def evaluate(args, model, data, es_patience=0, mode='Valid'):
     model.eval()
     total_loss = 0.
     total_sample = 0
@@ -59,7 +63,11 @@ def evaluate(args, model, data, mode='Valid'):
 
         mean_loss = total_loss / total_sample
         acc = total_hit / total_sample
-        print('  | {} | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f} |'
-              .format(mode, mean_loss, math.exp(mean_loss), acc))
+        if mode == 'Valid':
+            print('  | {} | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f} | es_patience {:.0f} |'
+                  .format(mode, mean_loss, math.exp(mean_loss), acc, es_patience))
+        else:
+            print('  | {} | loss {:5.4f} | ppl {:8.2f} | acc {:5.4f} |'
+                  .format(mode, mean_loss, math.exp(mean_loss), acc))
 
     return mean_loss, acc
