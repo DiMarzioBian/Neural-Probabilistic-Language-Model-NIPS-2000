@@ -1,6 +1,6 @@
 # A neural probabilistic language model
 
-This is a pytorch implementation of NIPS'00 paper [A neural probabilistic language model](https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf)
+This is an unofficial pytorch implementation of NIPS'00 paper [A neural probabilistic language model](https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf)
 
 
 ## Training model
